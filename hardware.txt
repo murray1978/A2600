@@ -1,0 +1,158 @@
+2600 cartridge pinouts
+A standard 2600 cartridge contains the equivalent of a 2716 or 2732/2532 with one notable exception: the chip select line is active high, not low. The high order address line of the 6507 (A12) is used as the chip enable. There was at least one company that used EPROMs with a 74LS04 inverter to compensate for this. Note that numbers indicate left to right numbering.
+
+        Top Row                 Bottom Row
+Slot    2716    CPU             2716    CPU
+
+1       13      D3              1       A7
+2       14      D4              2       A6
+3       15      D5              3       A5
+4       16      D6              4       A4
+5       17      D7              5       A3
+6       *       A12             6       A2
+7       19      A10             7       A1
+8       NC      A11             8       A0
+9       22      A9              9       D0
+10      23      A8              10      D1
+11      24      +5V             11      D2
+12      12      Shield Ground   NC      Ground
+    * to inverter and back to 18 for chip select
+
+(Looking at the bottom of the cartridge -- i.e. edge connectors first)
+                        Top
+ D3   D4   D5   D6   D7   A12  A10  A11  A9   A8  +5V   SGND
+--1- --2- --3- --4- --5- --6- --7- --8- --9- -10- -11- -12-
+ GND  D2   D1   D0   A0   A1   A2   A3   A4   A5   A6   A7
+                        Bottom
+
+Dx = Data line x
+Ax = Address line x
++5V = +5 volts
+SGND = Shield Ground
+GND = Ground
+Notes:
+
+On both cartridges that were opened, GND was also connected to SGND. Best to make sure that they are wired together.
+A11 and A12 could be switched. On both the chips I've checked, A12 was hardwired to +5 volts which leads me to believe that it is the highest address line. Since I believe that these chips are only 4Kx8 ROMs, this seems logical, since A12 would actually be just the chip enable for ROM (right?). Only the 2600 info tells differently, and it doesn't give any connection for A11 on the EPROM, so I don't trust it. Unfortunately, since the 2716 EPROM is used as an example, we won't know without actually trying one, since the 2716 doesn't really use A11 or A12 and either one could be used as a chip enable.
+Address
+lines           Memory
+used            Available       EPROM   Memory
+======================================================
+A11             2048            2716    2K
+A12             4096            2732    4K
+A13             8192            2764    8K  (needs support chips for banking)
+A13             8192        2 x 2732    8K  (most common of 8K config)
+
+    ____________
+    |   2716   |
+A7  | 1     24 | VCC [+5 V]
+A6  | 2     23 | A8
+A5  | 3     22 | A9
+A4  | 4     21 | VPP [Doesn't matter probably.  +5V]
+A3  | 5     20 | !Output Enable (always on) [GND]
+A2  | 6     19 | A10
+A1  | 7     18 | !Chip Enable (make high bit) [inverted A12]
+A0  | 8     17 | D7
+D0  | 9     16 | D6
+D1  | 10    15 | D5
+D2  | 11    14 | D4
+GND | 12    13 | D3
+    |__________|
+    ____________
+    |   2732   |
+A7  | 1     24 | VCC [+5 V]
+A6  | 2     23 | A8
+A5  | 3     22 | A9
+A4  | 4     21 | A11
+A3  | 5     20 | !Output Enable (always on) [GND] / VPP
+A2  | 6     19 | A10
+A1  | 7     18 | !Chip Enable (make high bit) [inverted A12]
+A0  | 8     17 | D7
+D0  | 9     16 | D6
+D1  | 10    15 | D5
+D2  | 11    14 | D4
+GND | 12    13 | D3
+    |__________|
+    ____________
+    |   2764   |
+VPP | 1     28 | VCC [+5 V]
+A12 | 2     27 | !Program Strobe (no connection?) [+5V]
+A7  | 3     26 | No Connection
+A6  | 4     25 | A8
+A5  | 5     24 | A9
+A4  | 6     23 | A11
+A3  | 7     22 | !Output Enable (always on) [GND]
+A2  | 8     21 | A10
+A1  | 9     20 | !Chip Enable (always on) [GND]
+A0  | 10    19 | D7
+D0  | 11    18 | D6
+D1  | 12    17 | D5
+D2  | 13    16 | D4
+GND | 14    15 | D3
+    |__________|
+
+VPP was also set at +5V for the 2764.
+
+Q: How do I build a video driver for the 2600?
+A: Parts list:
+
+T1 2SC1815
+R1 2.7K
+R2 150
+R3 68
+L1 180 uH
+L2 2.7 uH
+C1, C2 100 uF 6.3 V
+wire list:
+
+R1:1 to Ground
+R1:2 to Video In
+R2:1 to Video In
+R2:2 to T1 base
+R3:1 to Ground
+R3:2 to T1 emitter
+L1:1 to +5V
+L1:2 to T1 collector
+C1:1 to Ground
+C1:2 to T1 collector (positive lead of C1)
+C2:1 to L2:1
+C2:2 to T1 emitter (positive lead of C2)
+L2:1 to C1:1
+L2:2 to Video Out
+                                  +5 Volts
+                                     |
+                                     (
+                                  L1 (
+                                     (
+                                     |
+                        R2      |/---+---+
+   Video In -------+---^^^------| T1     |     + C2      L2
+                   |            |\       |
+                   |              >>-+---|-------| |----nnn----  Video Out
+                   >                 |   |
+                R1 >                 >   _ +
+                   >              R3 >   - C1
+                   |                 >   |
+                   |                 |   |
+                   +-----------------+---+--- Ground
+This is a simple common emitter amplifier. It is a non-inverting current amplifier and serves here to allow the video signal from the game to drive a standard composite monitor with 75 ohm impedance.
+
+In order to prevent the audio from interfering with the video signal, the mixing oscillator must be disabled on the main circuit board. On a 7800, remove the base lead of Q1. It is located near the RF modulator.
+
+The audio doesn't need any extra buffering.
+
+Places to get signals:
+
+1. from RF modulator
+   pin 3 is video
+   pin 1 is ground
+2. from Expansion Interface on 7800
+   pin 1 is ground
+   pin 2 is +5V
+   pin 3 is video
+   pin 17 is audio  [note: this is wrong.  Both Ben Jirou and Mark Graybill
+                     agree that one cannot get audio from the expansion
+                     interface.]
+3. from main circuit board
+on a 7800, video and ground are across C7; +5V and audio are across C4
+This circuit may not work or be required with all versions of the 2600. It is required for the 7800 and the Sears Video Arcade II version of the 2600. It is probably not necessary for a 5200.
