@@ -14,11 +14,11 @@ The current schematic references the Rev 14 and 15 schematics from the Feild Ser
 ## Current Board
 Currently the board uses through hole components, in order to shrink the board even more I could go to a surface mount approach.
 Pre fabrication check List, 
-1. [] All gronds on ground plane connected
-2. [] headers around the right way
-3. [] VCC connected to components
-4. [] correct footprints 
-5. [] dont belive DRC in kicad
+1. [ ] All gronds on ground plane connected
+2. [ ] headers around the right way
+3. [ ] VCC connected to components
+4. [ ] correct footprints 
+5. [ ] dont belive DRC in kicad
 
 ## Where to get parts
 
